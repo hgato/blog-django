@@ -1,0 +1,16 @@
+.ListItem-header {
+    text-align: center;
+}
+
+.ListItem-text {
+    padding: 10px 0 10px 0;
+    text-align: left;
+}
+
+.ListItem-footer {
+    text-align: right;
+}
+
+.ListItem-Link {
+    text-decoration: none;
+}

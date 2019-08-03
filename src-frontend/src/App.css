@@ -1,0 +1,16 @@
+.App {
+  text-align: center;
+  width: 100vw;
+  min-height: 100vh;
+}
+
+.App-header {
+  width: 100%;
+}
+
+.App-main {
+  width: 70%;
+  margin: 0 auto;
+  max-width: 1280px;
+  align-content: center;
+}

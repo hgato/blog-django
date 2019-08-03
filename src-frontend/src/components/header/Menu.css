@@ -1,0 +1,17 @@
+.Menu {
+    width: 100%;
+    border-bottom: 1px solid grey;
+    padding-bottom: 10px;
+    border-top: 1px solid grey;
+    padding-top: 10px;
+}
+
+.Menu-inner {
+    display: flex;
+    align-content: center;
+}
+
+.Menu-item {
+    margin-left: 20px;
+    margin-right: 20px;
+}

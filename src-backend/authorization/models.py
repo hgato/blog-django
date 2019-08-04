@@ -73,10 +73,12 @@ class User(AbstractUser):
 
     @classmethod
     def get_user_from_request(cls, request: HttpRequest):
-        jwt = request.headers.get('Authorization')
-        if not jwt:
-            jwt = request.headers.get('HTTP_AUTHORIZATION')
-        return cls.get_current_user(jwt)
+        encoded_jwt = request.headers.get('Authorization')
+        if not encoded_jwt:
+            encoded_jwt = request.headers.get('HTTP_AUTHORIZATION')
+        if not encoded_jwt:
+            raise Exception('User unauthenticated')
+        return cls.get_current_user(encoded_jwt)
 
     def serialize(self):
         return {

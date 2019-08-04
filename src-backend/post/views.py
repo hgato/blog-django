@@ -1,9 +1,8 @@
-from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
-import json
 
+from authorization.helpers.decorators import api_auth_demanded
 from authorization.models import User
 from post.models import Post
 from tools.http.mixins import JsonMixin
@@ -40,9 +39,9 @@ class PostView(TemplateView, JsonMixin):
 
         return self.respond_success_json({'post': post.serialize()})
 
-    def put(self, request, *args, **kwargs):
+    @method_decorator(api_auth_demanded)
+    def put(self, request, user, *args, **kwargs):
         try:
-            user = User.get_user_from_request(request)
             body = self.process_body(request, ['text', 'name', ])
         except Exception as error:
             return self.respond_error_json(error)
@@ -54,9 +53,9 @@ class PostView(TemplateView, JsonMixin):
         post.save()
         return self.respond_success_json({'post': post.serialize()})
 
-    def patch(self, request, post_id, *args, **kwargs):
+    @method_decorator(api_auth_demanded)
+    def patch(self, request, user, post_id, *args, **kwargs):
         try:
-            user = User.get_user_from_request(request)
             body = self.process_body(request)
             post = Post.objects.get(pk=post_id)
             self.check_post_belongs_to_user(post, user)
@@ -68,9 +67,9 @@ class PostView(TemplateView, JsonMixin):
         post.update(text=text, name=name)
         return self.respond_success_json({'post': post.serialize()})
 
-    def delete(self, request, post_id, *args, **kwargs):
+    @method_decorator(api_auth_demanded)
+    def delete(self, request, user, post_id, *args, **kwargs):
         try:
-            user = User.get_user_from_request(request)
             post = Post.objects.get(pk=post_id)
             self.check_post_belongs_to_user(post, user)
         except Exception as error:

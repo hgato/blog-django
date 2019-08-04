@@ -1,3 +1,4 @@
+from authorization.helpers.decorators import api_auth_demanded
 from authorization.models import User
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -53,9 +54,9 @@ def authenticate_user(request):
         return respond_403(error)
 
 
-def update_user(request):
+@api_auth_demanded
+def update_user(request, user):
     body = json.loads(request.body)
-    user = User.get_user_from_request(request)
     first_name = body.get('first_name', None)
     last_name = body.get('last_name', None)
     save = False
@@ -70,9 +71,9 @@ def update_user(request):
     return respond_200({})
 
 
-def delete_user(request):
+@api_auth_demanded
+def delete_user(request, user):
     try:
-        user = User.get_user_from_request(request)
         user.delete()
         return respond_200({})
     except Exception as error:
@@ -98,19 +99,13 @@ def user(request):
 
 
 @csrf_exempt
-def check(request):
-    try:
-        user = User.get_user_from_request(request)
-        return respond_200({'email': user.email})
-    except Exception as error:
-        return respond_403(error)
+@api_auth_demanded
+def check(request, user):
+    return respond_200({'email': user.email})
 
 
 @csrf_exempt
-def logout(request):
-    try:
-        user = User.get_user_from_request(request)
-        user.unauthenticate(request.headers['Authorization'])
-        return respond_200()
-    except Exception as error:
-        return respond_403(error)
+@api_auth_demanded
+def logout(request, user):
+    user.unauthenticate(request.headers['Authorization'])
+    return respond_200()

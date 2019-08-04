@@ -5,7 +5,6 @@ from authorization.helpers.decorators import api_auth_demanded
 from authorization.models import User
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-import json
 from tools.http.mixins import JsonMixin
 
 
@@ -14,45 +13,24 @@ class UserView(TemplateView, JsonMixin):
     def dispatch(self, request, *args, **kwargs):
         return super(UserView, self).dispatch(request, *args, **kwargs)
 
-    def put(self, request, *args, **kwargs):
-        body = json.loads(request.body)
+    def check_old_user_exists(self, body):
+        old_user = None
         try:
-            old_user = None
-            try:
-                old_user = User.objects.get(username=body['email'])
-            except:
-                pass
-            if old_user:
-                raise Exception('User already exists')
-        except Exception as error:
-            return self.respond_error_json(error, status=409)
+            old_user = User.objects.get(username=body['email'])
+        except:
+            pass
+        if old_user:
+            raise Exception('User already exists')
 
-        try:
-            validate_email(body.get('email'))
-        except Exception as error:
-            return self.respond_error_json(error, status=400)
-
+    def create_new_user(self, body):
         user = User(first_name=body['first_name'],
                     last_name=body['last_name'],
                     email=body['email'],
                     username=body['email'])
         user.set_password(body['password'])
         user.save()
-        return self.respond_success_json(status=201)
 
-    def post(self, request, *args, **kwargs):
-        body = json.loads(request.body)
-        try:
-            user, encoded_jwt = User.authenticate(body['email'], body['password'])
-            return self.respond_success_json({'jwt': encoded_jwt, 'user': user.serialize()})
-        except Exception as error:
-            return self.respond_error_json(error, status=403)
-
-    @method_decorator(api_auth_demanded)
-    def patch(self, request, user, *args, **kwargs):
-        body = json.loads(request.body)
-        first_name = body.get('first_name', None)
-        last_name = body.get('last_name', None)
+    def save_new_user_info(self, user, first_name, last_name):
         save = False
         if first_name:
             user.first_name = first_name
@@ -62,6 +40,36 @@ class UserView(TemplateView, JsonMixin):
             save = True
         if save:
             user.save()
+
+    def put(self, request, *args, **kwargs):
+        try:
+            body = self.process_body(request, ['first_name', 'last_name', 'email', 'password', ])
+            validate_email(body.get('email'))
+        except Exception as error:
+            return self.respond_error_json(error, status=400)
+
+        try:
+            self.check_old_user_exists(body)
+        except Exception as error:
+            return self.respond_error_json(error, status=409)
+
+        self.create_new_user(body)
+        return self.respond_success_json(status=201)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            body = self.process_body(request, ['email', 'password', ])
+            user, encoded_jwt = User.authenticate(body['email'], body['password'])
+            return self.respond_success_json({'jwt': encoded_jwt, 'user': user.serialize()})
+        except Exception as error:
+            return self.respond_error_json(error, status=403)
+
+    @method_decorator(api_auth_demanded)
+    def patch(self, request, user, *args, **kwargs):
+        body = self.process_body(request)
+        first_name = body.get('first_name', None)
+        last_name = body.get('last_name', None)
+        self.save_new_user_info(user, first_name, last_name)
         return self.respond_success_json()
 
     @method_decorator(api_auth_demanded)
@@ -78,6 +86,7 @@ def respond_200(payload: dict = None):
         payload = {}
     payload['status'] = 'ok'
     return JsonResponse(payload, status=200)
+
 
 @csrf_exempt
 @api_auth_demanded

@@ -14,24 +14,10 @@ class StatusMixIn:
     ]
 
 
-# class PostGroup(models.Model, StatusMixIn):
-#     name = models.CharField(max_length=300)
-#     description = models.TextField()
-#     date = models.DateTimeField()
-#     status = models.CharField(max_length=2, choices=StatusMixIn.STATUS_CHOICES, default=StatusMixIn.PENDING)
-#
-#     def make_deleted(self):
-#         self.status = self.DELETED
-#         posts = self.posts.all()
-#         posts.make_deleted()
-#         self.save()
-
-
 class Post(models.Model, StatusMixIn):
     name = models.CharField(max_length=300)
     text = models.TextField()
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-    # post_group = models.ForeignKey(PostGroup, on_delete=models.CASCADE, related_name='posts')
     date = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=2, choices=StatusMixIn.STATUS_CHOICES, default=StatusMixIn.PENDING)
 
@@ -87,11 +73,6 @@ class Post(models.Model, StatusMixIn):
                 'id': self.author.id,
             },
             'date': self.date,
-            # 'post_group': {
-            #     'id': self.post_group.pk,
-            #     'name': self.post_group.name,
-            #     'description': self.post_group.description,
-            # },
         }
 
 
@@ -100,4 +81,3 @@ class OldPost(models.Model):
     text = models.TextField()
     date = models.DateTimeField()
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-    # post_group = models.ForeignKey(PostGroup, on_delete=models.CASCADE)

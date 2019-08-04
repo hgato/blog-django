@@ -12,7 +12,9 @@ def respond_403(error: Exception):
     return JsonResponse(response, status=403)
 
 
-def respond_200(payload: dict):
+def respond_200(payload: dict = None):
+    if not payload:
+        payload = {}
     payload['status'] = 'ok'
     return JsonResponse(payload, status=200)
 
@@ -100,6 +102,15 @@ def check(request):
     try:
         user = User.get_user_from_request(request)
         return respond_200({'email': user.email})
+    except Exception as error:
+        return respond_403(error)
 
+
+@csrf_exempt
+def logout(request):
+    try:
+        user = User.get_user_from_request(request)
+        user.unauthenticate(request.headers['Authorization'])
+        return respond_200()
     except Exception as error:
         return respond_403(error)

@@ -13,6 +13,7 @@ class Main extends React.Component {
         return (
             <div className="Main">
                 <Route exact path="/" render={(props) => <List {...props} />}/>
+                <Route exact path="/posts/my" render={(props) => <List author={this.props.user.id} {...props} />}/>
                 <Route exact path="/signup" render={(props) => <Signup {...props} />}/>
                 <Route exact path="/login" render={(props) => <Login {...props} user={this.props.user} setUser={this.props.setUser}/>}/>
                 <Route exact path="/posts/:id(\d+)" render={(props) => <Post {...props} user={this.props.user} />}/>
@@ -21,7 +22,6 @@ class Main extends React.Component {
             </div>
           );
     }
-
 }
 
 export default Main;

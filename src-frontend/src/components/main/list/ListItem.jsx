@@ -11,7 +11,7 @@ class ListItem extends React.Component {
                     <div className="ListItem-text">{
                         this.props.post.text.length > 1000
                             ? this.props.post.text.slice(0, 1000)
-                            : this.props.post.text.length}</div>
+                            : this.props.post.text}</div>
                     <div className="ListItem-footer">
                         {this.props.post.author.first_name + ' ' + this.props.post.author.last_name}
                     </div>

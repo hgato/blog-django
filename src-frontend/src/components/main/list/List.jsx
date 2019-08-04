@@ -21,8 +21,9 @@ class List extends React.Component {
     }
 
     loadPosts() {
-        let self = this
-        axios.get(`api/posts/list?limit=${self.limit}&offset=${self.offset}`)
+        const self = this
+        const author = self.props.author ? `&author=${self.props.author }` : '';
+        axios.get(`/api/posts/list?limit=${self.limit}&offset=${self.offset}${author}`)
           .then(function (response) {
             self.setState({
                 posts: response.data.posts,

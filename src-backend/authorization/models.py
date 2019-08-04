@@ -8,14 +8,34 @@ from django.contrib.auth.models import AbstractUser
 from django.http import HttpRequest
 
 
+class RedisAuthenticator:
+    connection = None
+
+    def connect(self):
+        if not self.connection:
+            self.connection = redis.Redis(host='redis', port=6379, db=0)
+
+    def set(self, key, value):
+        self.connect()
+        self.connection.set(key, value)
+
+    def get(self, key):
+        self.connect()
+        return self.connection.get(key)
+
+    def delete(self, key):
+        self.connect()
+        self.connection.delete(key)
+
+
 class User(AbstractUser):
     JWT_TIMEOUT = 24 * 3600
     DJANGO_JWT_SECRET = os.environ.get('DJANGO_JWT_SECRET')
+    redis_connection = RedisAuthenticator()
 
     @classmethod
     def get_current_user(cls, encoded_jwt: str) -> User:
-        redis_connection = redis.Redis(host='redis', port=6379, db=0)
-        timestamp = redis_connection.get(encoded_jwt.encode('utf-8'))
+        timestamp = cls.redis_connection.get(encoded_jwt.encode('utf-8'))
 
         if not timestamp:
             raise Exception('User unauthenticated')
@@ -47,9 +67,7 @@ class User(AbstractUser):
             'timestamp': timestamp
         }
         encoded_jwt = jwt.encode(payload, cls.DJANGO_JWT_SECRET, algorithm='HS256')
-
-        redis_connection = redis.Redis(host='redis', port=6379, db=0)
-        redis_connection.set(encoded_jwt, timestamp)
+        cls.redis_connection.set(encoded_jwt, timestamp)
 
         return user, encoded_jwt.decode('utf-8')
 
@@ -68,3 +86,6 @@ class User(AbstractUser):
             'password': self.password,
             'id': self.id,
         }
+
+    def unauthenticate(self, encoded_jwt: str):
+        self.redis_connection.delete(encoded_jwt.encode('utf-8'))

@@ -9,15 +9,16 @@ class App extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            user: null,
-            jwt: null
+            user: null
         }
         this.setUser = this.setUser.bind(this)
     }
 
     setUser(user, jwt) {
-        user.jwt = jwt;
-        this.setState({user: user, jwt: jwt});
+        if (user) {
+            user.jwt = jwt;
+        }
+        this.setState({user: user});
     }
 
     render () {
@@ -25,7 +26,7 @@ class App extends React.Component {
               <Router>
                   <div className="App">
                       <header className="App-header">
-                          <Header user={this.state.user}/>
+                          <Header user={this.state.user} setUser={this.setUser}/>
                       </header>
                       <main className="App-main"><Main user={this.state.user} setUser={this.setUser}/></main>
                   </div>

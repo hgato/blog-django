@@ -22,7 +22,7 @@ class Login extends React.Component {
         axios.post('api/user/', this.state).then(function (response) {
             if (response.status === 200) {
                 self.props.setUser(response.data.user, response.data.jwt)
-            self.setRedirect()
+                self.setRedirect()
             }
         })
     }

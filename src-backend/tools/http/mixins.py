@@ -36,8 +36,8 @@ class JsonMixin:
         }
         return self.render_to_json_response(response, status=status)
 
-    def respond_success_json(self, payload=None):
+    def respond_success_json(self, payload=None, status=200):
         if not payload:
             payload = {}
         payload['status'] = 'ok'
-        return self.render_to_json_response(payload)
+        return self.render_to_json_response(payload, status=status)

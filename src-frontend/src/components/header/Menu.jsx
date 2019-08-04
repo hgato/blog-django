@@ -46,6 +46,7 @@ class Menu extends React.Component {
                 {this.renderRedirect()}
                 <div className="MenuInner">
                     <span className="Menu-item"><Link to="/">Home</Link></span>
+                    <span className="Menu-item"><Link to="/search">Search</Link></span>
                     {loggedIn ? <span className="Menu-item"><Link to="/posts/new">Write</Link></span> : null}
                     {loggedIn ? <span className="Menu-item"><Link to="/posts/my">My posts</Link></span> : null}
                     {loggedIn ? <span className="Menu-item" onClick={this.logout}>Log out</span> : null}

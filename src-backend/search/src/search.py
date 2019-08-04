@@ -35,11 +35,22 @@ class PostSearch(ElasticSearch):
     index_pattern = 'post_post*'
     fields = ['text', 'name', 'author_name']
 
+    def count_total(self, results):
+        return results['hits']['total']
+
     def clean_results(self, results):
+        total = self.count_total(results)
         clean_results = [hit['_source']['id'] for hit in results['hits']['hits']]
-        return clean_results
+        return clean_results, total
 
     def form_query(self, query):
+        # search all on empty query
+        if not query:
+            return {
+                'query': {
+                    'match_all': {}
+                }
+            }
         # user english analyzer by default and standard one for names
         return {
             'query': {

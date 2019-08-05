@@ -11,5 +11,5 @@ def api_auth_demanded(func):
                 raise Exception('User not found')
             return func(request, user, *args, **kwargs)
         except Exception as error:
-            return JsonResponse({'status': 'error', 'message': str(error)})
+            return JsonResponse({'status': 'error', 'message': str(error)}, status=403)
     return wrapper

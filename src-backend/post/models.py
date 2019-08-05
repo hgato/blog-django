@@ -34,7 +34,6 @@ class Post(models.Model, StatusMixIn):
                            text=self.old_text,
                            author=self.old_author,
                            date=self.old_date)
-                           # post_group=self.post_group)
         old_post.save()
 
     def check_cannot_create_old_version(self):

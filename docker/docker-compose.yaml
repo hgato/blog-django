@@ -27,8 +27,8 @@ services:
 
   backend:
     build: ./django
-    command: python manage.py runserver 0.0.0.0:8000
-#    command: bash -c "tail -f /dev/null"
+#    command: python manage.py runserver 0.0.0.0:8000
+    command: bash -c "tail -f /dev/null"
     volumes:
       - ../src-backend:/src
     ports:

@@ -82,8 +82,8 @@ class PostView(TemplateView, JsonMixin):
 class PostListView(TemplateView, JsonMixin):
     def get_proper_posts(self, limit, offset, author):
         if author:
-            return Post.objects.filter(author=int(author)).order_by('-pk')[offset: offset + limit]
-        return Post.objects.order_by('-pk')[offset: offset + limit]
+            return Post.objects.filter(author=int(author), status=Post.ACTIVE).order_by('-pk')[offset: offset + limit]
+        return Post.objects.filter(status=Post.ACTIVE).order_by('-pk')[offset: offset + limit]
 
     def get(self, request, *args, **kwargs):
         offset = int(request.GET.get('offset', 0))

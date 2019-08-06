@@ -1,10 +1,38 @@
+import json
+
+from django.core.exceptions import ObjectDoesNotExist
 from django.test import TestCase
+from django.urls import reverse
 
 from authorization.models import User
 from post.models import Post, OldPost
 
 
-class PostModelTests(TestCase):
+class CreateEntities:
+    EMAIL = 'email'
+    PASSWORD = 'password'
+
+    def _create_user(self, email=None):
+        email = email if email else self.EMAIL
+        user = User(first_name='first_name',
+                    last_name='last_name',
+                    email=email,
+                    username=email)
+        user.set_password(self.PASSWORD)
+        user.save()
+        return user
+
+    def _create_post_name_text(self, user):
+        text = 'text'
+        name = 'name'
+        post = Post(text=text,
+                    name=name,
+                    author=user)
+        post.save()
+        return post, name, text
+
+
+class PostModelTests(TestCase, CreateEntities):
     def test_check_new_text_false(self):
         """
         check_new_text method must return false for new post
@@ -146,21 +174,233 @@ class PostModelTests(TestCase):
         }
         self.assertEqual(expected, post.serialize(), 'Wrong dictionary returned')
 
-    def _create_user(self):
-        user = User(first_name='first_name',
-                    last_name='last_name',
-                    email='email',
-                    username='email',
-                    password='password')
-        user.save()
-        return user
 
-    def _create_post_name_text(self, user):
-        text = 'text'
-        name = 'name'
-        post = Post(text=text,
-                    name=name,
-                    author=user)
+class PostViewTest(TestCase, CreateEntities):
+    def test_post_live_cycle(self):
+        self._create_user()
+        _, jwt_header = User.authenticate(self.EMAIL, self.PASSWORD)
+
+        post_pk = self.create_post_success(jwt_header).pk
+        self.get_post_success(post_pk)
+
+        self.update_post_success(post_pk, jwt_header)
+        self.get_post_success(post_pk)
+
+        self.delete_post_success(post_pk, jwt_header)
+        self.get_post_error(post_pk)
+
+    def test_auth_needed(self):
+        self.create_post_auth_error()
+
+        user = self._create_user()
+        post, name, text = self._create_post_name_text(user)
+        post.status = Post.ACTIVE
         post.save()
-        return post, name, text
 
+        self.update_post_auth_error(post.pk)
+        self.delete_post_auth_error(post.pk)
+
+    def test_other_user_auth(self):
+        self._create_user()
+        _, jwt_header = User.authenticate(self.EMAIL, self.PASSWORD)
+
+        post_user = self._create_user(email='alternative_email')
+        post, name, text = self._create_post_name_text(post_user)
+        post.status = Post.ACTIVE
+        post.save()
+
+        self.update_post_wrong_user(post.pk, jwt_header)
+        self.delete_post_wrong_user(post.pk, jwt_header)
+
+    def create_post_success(self, jwt_header):
+        request_data = {
+            "name": "post_name",
+            "text": "post_text"
+        }
+        header = {'HTTP_AUTHORIZATION': jwt_header}
+        response = self.client.put(reverse('posts'), json.dumps(request_data),
+                                   content_type="application/json", **header)
+        self.assertContains(response, 'ok', status_code=200)
+        post = Post.objects.get(name=request_data['name'],
+                                text=request_data['text'])
+        self.assertIsNotNone(post)
+        return post
+
+    def create_post_auth_error(self):
+        request_data = {
+            "name": "post_name",
+            "text": "post_text"
+        }
+        response = self.client.put(reverse('posts'), json.dumps(request_data),
+                                   content_type="application/json")
+        self.assertContains(response, 'error', status_code=403)
+        with self.assertRaises(ObjectDoesNotExist):
+            Post.objects.get(name=request_data['name'],
+                             text=request_data['text'])
+
+    def get_post_success(self, post_pk):
+        post = Post.objects.get(pk=post_pk)
+        response = self.client.get(reverse('post', kwargs={'post_id': post.pk}))
+        self.assertContains(response, 'ok', status_code=200)
+        self.assertContains(response, post.name, status_code=200)
+        self.assertContains(response, post.text, status_code=200)
+
+    def get_post_error(self, post_pk):
+        response = self.client.get(reverse('post', kwargs={'post_id': post_pk}))
+        self.assertContains(response, 'error', status_code=400)
+
+    def update_post_success(self, post_pk, jwt_header):
+        request_data = {
+            "name": "new_post_name",
+            "text": "new_post_text"
+        }
+        header = {'HTTP_AUTHORIZATION': jwt_header}
+        response = self.client.patch(reverse('post', kwargs={'post_id': post_pk}),
+                                             json.dumps(request_data),
+                                     content_type="application/json",
+                                     **header)
+        self.assertContains(response, 'ok', status_code=200)
+        self.assertContains(response, request_data['name'], status_code=200)
+        self.assertContains(response, request_data['text'], status_code=200)
+        post = Post.objects.get(pk=post_pk)
+        self.assertEqual(request_data['name'], post.name, 'New name must be set')
+        self.assertEqual(request_data['text'], post.text, 'New text must be set')
+
+    def update_post_auth_error(self, post_pk):
+        post = Post.objects.get(pk=post_pk)
+        request_data = {
+            "name": "new_post_name",
+            "text": "new_post_text"
+        }
+        response = self.client.patch(reverse('post', kwargs={'post_id': post_pk}),
+                                     json.dumps(request_data),
+                                     content_type="application/json")
+        self.assertContains(response, 'error', status_code=403)
+        self.assertNotEqual(request_data['name'], post.name, 'New name must not be set')
+        self.assertNotEqual(request_data['text'], post.text, 'New text must not be set')
+
+    def update_post_wrong_user(self, post_pk, jwt_header):
+        post = Post.objects.get(pk=post_pk)
+        request_data = {
+            "name": "new_post_name",
+            "text": "new_post_text"
+        }
+        header = {'HTTP_AUTHORIZATION': jwt_header}
+        response = self.client.patch(reverse('post', kwargs={'post_id': post_pk}),
+                                     json.dumps(request_data),
+                                     content_type="application/json",
+                                     **header)
+        self.assertContains(response, 'error', status_code=400)
+        self.assertNotEqual(request_data['name'], post.name, 'New name must not be set')
+        self.assertNotEqual(request_data['text'], post.text, 'New text must not be set')
+
+    def delete_post_success(self, post_pk, jwt_header):
+        header = {'HTTP_AUTHORIZATION': jwt_header}
+        response = self.client.delete(reverse('post', kwargs={'post_id': post_pk}),
+                                      **header)
+        self.assertContains(response, 'ok', status_code=200)
+        post = Post.objects.get(pk=post_pk)
+        self.assertEqual(post.DELETED, post.status, 'Status DL not set')
+
+    def delete_post_auth_error(self, post_pk):
+        response = self.client.delete(reverse('post', kwargs={'post_id': post_pk}))
+        self.assertContains(response, 'error', status_code=403)
+        post = Post.objects.get(pk=post_pk)
+        self.assertEqual(post.ACTIVE, post.status, 'Status DL not set')
+
+    def delete_post_wrong_user(self, post_pk, jwt_header):
+        header = {'HTTP_AUTHORIZATION': jwt_header}
+        response = self.client.delete(reverse('post', kwargs={'post_id': post_pk}),
+                                      **header)
+        self.assertContains(response, 'error', status_code=400)
+        post = Post.objects.get(pk=post_pk)
+        self.assertEqual(post.ACTIVE, post.status, 'Status DL not set')
+
+
+class PostListViewTest(TestCase):
+    def test_list(self):
+        (user1, user2,
+         post_us1_ac, post_us1_pd, post_us1_dl,
+         post_us2_ac, post_us2_pd, post_us2_dl) = self.create_users_and_posts()
+
+        response = self.client.get(reverse('posts_list'))
+        self.assert_contains_name(response, [post_us1_ac, post_us2_ac, ])
+        self.assert_not_contains_name(response, [post_us1_pd, post_us1_dl,
+                                                 post_us2_pd, post_us2_dl,])
+
+    def test_author_list(self):
+        (user1, user2,
+         post_us1_ac, post_us1_pd, post_us1_dl,
+         post_us2_ac, post_us2_pd, post_us2_dl) = self.create_users_and_posts()
+
+        response = self.client.get(reverse('posts_list') + '?author={}'.format(user1.pk))
+        self.assert_contains_name(response, [post_us1_ac, ])
+        self.assert_not_contains_name(response, [post_us2_ac, post_us1_pd, post_us1_dl,
+                                                 post_us2_pd, post_us2_dl, ])
+
+    def test_list_limit_offset(self):
+        (user1, user2,
+         post_us1_ac, post_us1_pd, post_us1_dl,
+         post_us2_ac, post_us2_pd, post_us2_dl) = self.create_users_and_posts()
+
+        response = self.client.get(reverse('posts_list') + '?limit=1&offset=0')
+        self.assert_contains_name(response, [post_us2_ac, ])
+        self.assert_not_contains_name(response, [post_us1_ac, post_us1_pd, post_us1_dl,
+                                                 post_us2_pd, post_us2_dl, ])
+
+        response = self.client.get(reverse('posts_list') + '?limit=1&offset=1')
+        self.assert_contains_name(response, [post_us1_ac, ])
+        self.assert_not_contains_name(response, [post_us2_ac, post_us1_pd, post_us1_dl,
+                                                 post_us2_pd, post_us2_dl, ])
+
+    def assert_contains_name(self, response, posts):
+        for post in posts:
+            self.assertContains(response, '"name": "{}"'.format(post.name))
+
+    def assert_not_contains_name(self, response, posts):
+        for post in posts:
+            self.assertNotContains(response, '"name": "{}"'.format(post.name))
+
+    def create_users_and_posts(self):
+        user1 = User(first_name='first_name',
+                     last_name='last_name',
+                     email='email1',
+                     username='email1')
+        user1.set_password('password')
+        user1.save()
+
+        user2 = User(first_name='first_name',
+                     last_name='last_name',
+                     email='email2',
+                     username='email2')
+        user2.set_password('password')
+        user2.save()
+
+        post_us1_ac = Post.objects.create(name='name1',
+                                          text='text',
+                                          author=user1,
+                                          status=Post.ACTIVE)
+        post_us1_pd = Post.objects.create(name='name2',
+                                          text='text',
+                                          author=user1,
+                                          status=Post.PENDING)
+        post_us1_dl = Post.objects.create(name='name3',
+                                          text='text',
+                                          author=user1,
+                                          status=Post.DELETED)
+
+        post_us2_ac = Post.objects.create(name='name4',
+                                          text='text',
+                                          author=user2,
+                                          status=Post.ACTIVE)
+        post_us2_pd = Post.objects.create(name='name5',
+                                          text='text',
+                                          author=user2,
+                                          status=Post.PENDING)
+        post_us2_dl = Post.objects.create(name='name6',
+                                          text='text',
+                                          author=user2,
+                                          status=Post.DELETED)
+        return (user1, user2,
+                post_us1_ac, post_us1_pd, post_us1_dl,
+                post_us2_ac, post_us2_pd, post_us2_dl)

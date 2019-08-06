@@ -1,7 +1,9 @@
+import json
 import time
 import jwt
 from django.http import HttpRequest, JsonResponse
 from django.test import TestCase
+from django.urls import reverse
 
 from authorization.helpers.decorators import api_auth_demanded
 from authorization.models import User
@@ -164,3 +166,74 @@ class UserModelTests(TestCase, CreatObjects):
         User.redis_connection.database[encoded_jwt] = timestamp
         with self.assertRaises(Exception):
             User.get_user_from_request(request)
+
+
+class UserViewTest(TestCase):
+    def test_user_life_cycle(self):
+        email = "text@email.email"
+        password = "password"
+
+        self.create_user_success(email, password)
+        jwt_header = self.authenticate_user_success(email, password)
+        self.check_user_success(jwt_header)
+
+        self.unauthenticate_user_success(jwt_header)
+        self.check_user_error(jwt_header)
+
+        jwt_header = self.authenticate_user_success(email, password)
+        self.delete_user_success(jwt_header)
+        self.check_user_error(jwt_header)
+        self.authenticate_user_error(email, password)
+
+    def create_user_success(self, email, password):
+        request_data = {
+            "first_name": "first_name",
+            "last_name": "last_name",
+            "email": email,
+            "password": password,
+        }
+        response = self.client.put(reverse('user'), json.dumps(request_data),
+                                   content_type="application/json")
+        self.assertContains(response, 'ok', status_code=201)
+
+    def authenticate_user_success(self, email, password):
+        request_data = {
+            "email": email,
+            "password": password
+        }
+        response = self.client.post(reverse('user'), json.dumps(request_data),
+                                    content_type="application/json")
+        self.assertContains(response, 'jwt', status_code=200)
+        return json.loads(response.getvalue())['jwt']
+
+    def check_user_success(self, jwt_header):
+        header = {'HTTP_AUTHORIZATION': jwt_header}
+        response = self.client.get(reverse('check_user'), **header)
+        self.assertContains(response, 'ok', status_code=200)
+
+    def unauthenticate_user_success(self, jwt_header):
+        header = {'HTTP_AUTHORIZATION': jwt_header}
+        response = self.client.delete(reverse('logout'), **header)
+        self.assertContains(response, 'ok', status_code=200)
+
+    def check_user_error(self, jwt_header):
+        header = {'HTTP_AUTHORIZATION': jwt_header}
+        response = self.client.get(reverse('check_user'), **header)
+        self.assertContains(response, 'error', status_code=403)
+
+    def delete_user_success(self, jwt_header):
+        header = {'HTTP_AUTHORIZATION': jwt_header}
+        response = self.client.delete(reverse('user'), **header)
+        self.assertContains(response, 'ok', status_code=200)
+
+        with self.assertRaises(Exception):
+            User.get_current_user(jwt_header)
+
+    def authenticate_user_error(self, email, password):
+        request_data = {
+            "email": email,
+            "password": password
+        }
+        response = self.client.post(reverse('user'), json.dumps(request_data),
+                                    content_type="application/json")
+        self.assertContains(response, 'error', status_code=403)

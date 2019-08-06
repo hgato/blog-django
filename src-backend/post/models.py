@@ -1,6 +1,7 @@
 from django.db import models
+from django.utils import timezone
+
 from authorization.models import User
-from datetime import datetime
 
 
 class StatusMixIn:
@@ -53,7 +54,7 @@ class Post(models.Model, StatusMixIn):
         if text:
             self.text = text
 
-        self.date = datetime.now()
+        self.date = timezone.now()
         self.save()
         self.save_old_version()
 

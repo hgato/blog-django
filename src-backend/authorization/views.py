@@ -30,17 +30,6 @@ class UserView(TemplateView, JsonMixin):
         user.set_password(body['password'])
         user.save()
 
-    def save_new_user_info(self, user, first_name, last_name):
-        save = False
-        if first_name:
-            user.first_name = first_name
-            save = True
-        if last_name:
-            user.last_name = last_name
-            save = True
-        if save:
-            user.save()
-
     def put(self, request, *args, **kwargs):
         try:
             body = self.process_body(request, ['first_name', 'last_name', 'email', 'password', ])
@@ -65,15 +54,7 @@ class UserView(TemplateView, JsonMixin):
             return self.respond_error_json(error, status=403)
 
     @method_decorator(api_auth_demanded)
-    def patch(self, request, user, *args, **kwargs):
-        body = self.process_body(request)
-        first_name = body.get('first_name', None)
-        last_name = body.get('last_name', None)
-        self.save_new_user_info(user, first_name, last_name)
-        return self.respond_success_json()
-
-    @method_decorator(api_auth_demanded)
-    def delete_user(self, request, user, *args, **kwargs):
+    def delete(self, request, user, *args, **kwargs):
         try:
             user.delete()
             return self.respond_success_json()

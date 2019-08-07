@@ -1,10 +1,14 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpRequest
 
 from authorization.models import User
 
 
 def api_auth_demanded(func):
-    def wrapper(request, *args, **kwargs):
+    """
+    Decorator for view function that returns 403 error if user is not authenticated
+    before calling view function
+    """
+    def wrapper(request: HttpRequest, *args, **kwargs):
         try:
             user = User.get_user_from_request(request)
             if not user:

@@ -44,7 +44,7 @@ class PostSearchTest(TestCase):
 
     def test_clear_results(self):
         search_object = PostSearch()
-        self.assertEqual(([1, 7, ], 2,), search_object.clean_results(mock_results), 'Wrong result')
+        self.assertEqual(([1, 7, ], 2,), search_object._clean_results(mock_results), 'Wrong result')
 
     def test_form_query(self):
         search_object = PostSearch()
@@ -73,7 +73,7 @@ class PostSearchTest(TestCase):
                 }
             }
         }
-        self.assertEqual(expected_query, search_object.form_query(query), 'Wrong query dictionary returned')
+        self.assertEqual(expected_query, search_object._form_query(query), 'Wrong query dictionary returned')
 
     def test_form_query_empty(self):
         search_object = PostSearch()
@@ -83,12 +83,12 @@ class PostSearchTest(TestCase):
                 'match_all': {}
             }
         }
-        self.assertEqual(expected_query, search_object.form_query(query), 'Wrong query dictionary returned')
+        self.assertEqual(expected_query, search_object._form_query(query), 'Wrong query dictionary returned')
 
     def test_get_index(self):
         search_object = PostSearch()
         search_object.connection = ElasticsearchMock()
-        self.assertEqual('post_post-1111.11.11', search_object.get_index())
+        self.assertEqual('post_post-1111.11.11', search_object._get_index())
 
     def test_run(self):
         search_object = PostSearch()

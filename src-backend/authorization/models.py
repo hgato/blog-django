@@ -11,20 +11,20 @@ from django.http import HttpRequest
 class RedisAuthenticator:
     connection = None
 
-    def connect(self):
+    def _connect(self):
         if not self.connection:
             self.connection = redis.Redis(host='redis', port=6379, db=0)
 
     def set(self, key, value):
-        self.connect()
+        self._connect()
         self.connection.set(key, value)
 
     def get(self, key):
-        self.connect()
+        self._connect()
         return self.connection.get(key)
 
     def delete(self, key):
-        self.connect()
+        self._connect()
         self.connection.delete(key)
 
 
@@ -78,7 +78,7 @@ class User(AbstractUser):
             raise Exception('User unauthenticated')
         return cls.get_current_user(encoded_jwt)
 
-    def serialize(self):
+    def serialize(self) -> dict:
         return {
             'first_name': self.first_name,
             'last_name': self.last_name,

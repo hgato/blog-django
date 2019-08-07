@@ -22,13 +22,13 @@ class Post(models.Model, StatusMixIn):
     date = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=2, choices=StatusMixIn.STATUS_CHOICES, default=StatusMixIn.PENDING)
 
-    def check_new_text(self):
+    def _check_new_text(self) -> bool:
         return self.pk \
                 and getattr(self, 'old_name', None) != self.name \
                 and getattr(self, 'old_text', None) != self.text
 
-    def save_old_version(self):
-        if self.check_cannot_create_old_version():
+    def _save_old_version(self):
+        if self._check_cannot_create_old_version():
             raise Exception('Use "update" method to save existing model')
 
         old_post = OldPost(name=self.old_name,
@@ -37,13 +37,13 @@ class Post(models.Model, StatusMixIn):
                            date=self.old_date)
         old_post.save()
 
-    def check_cannot_create_old_version(self):
+    def _check_cannot_create_old_version(self) -> bool:
         return not hasattr(self, 'old_name') or\
                 not hasattr(self, 'old_text') or\
                 not hasattr(self, 'old_author') or\
                 not hasattr(self, 'old_date')
 
-    def update(self, name, text):
+    def update(self, name: str, text: str):
         self.old_name = self.name
         self.old_text = self.text
         self.old_author = self.author
@@ -56,13 +56,13 @@ class Post(models.Model, StatusMixIn):
 
         self.date = timezone.now()
         self.save()
-        self.save_old_version()
+        self._save_old_version()
 
     def make_delete(self):
         self.status = StatusMixIn.DELETED
         self.save()
 
-    def serialize(self):
+    def serialize(self) -> dict:
         return {
             'id': self.pk,
             'text': self.text,

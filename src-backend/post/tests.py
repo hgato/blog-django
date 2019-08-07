@@ -38,7 +38,7 @@ class PostModelTests(TestCase, CreateEntities):
         check_new_text method must return false for new post
         """
         post = Post()
-        self.assertFalse(post.check_new_text(), 'Method check_new_text must return true')
+        self.assertFalse(post._check_new_text(), 'Method check_new_text must return true')
 
     def test_check_new_text_true(self):
         """
@@ -49,7 +49,7 @@ class PostModelTests(TestCase, CreateEntities):
 
         post.old_text = 'old_text'
         post.old_name = 'old_name'
-        self.assertTrue(post.check_new_text(), 'Method check_new_text must return true')
+        self.assertTrue(post._check_new_text(), 'Method check_new_text must return true')
 
     def test_save_old_version_error(self):
         """
@@ -62,7 +62,7 @@ class PostModelTests(TestCase, CreateEntities):
                     name=name)
 
         with self.assertRaises(Exception):
-            post.save_old_version()
+            post._save_old_version()
 
     def test_save_old_version_success(self):
         """
@@ -81,7 +81,7 @@ class PostModelTests(TestCase, CreateEntities):
         post.text = new_text
         post.name = new_name
 
-        post.save_old_version()
+        post._save_old_version()
         old_post = OldPost.objects.get(name=name, text=text)
         self.assertIsNotNone(old_post, 'Method save_old_version must create old version')
 
@@ -91,7 +91,7 @@ class PostModelTests(TestCase, CreateEntities):
         if old properties not set
         """
         post = Post()
-        self.assertTrue(post.check_cannot_create_old_version(),
+        self.assertTrue(post._check_cannot_create_old_version(),
                         'Method check_cannot_create_old_version must return true')
 
     def test_check_cannot_create_old_version_false(self):
@@ -105,7 +105,7 @@ class PostModelTests(TestCase, CreateEntities):
         post.old_text = 'set'
         post.old_author = 'set'
 
-        self.assertFalse(post.check_cannot_create_old_version(),
+        self.assertFalse(post._check_cannot_create_old_version(),
                          'Method check_cannot_create_old_version must return false')
 
     def test_update_must_save_old_and_new_version(self):
@@ -256,7 +256,7 @@ class PostViewTest(TestCase, CreateEntities):
         }
         header = {'HTTP_AUTHORIZATION': jwt_header}
         response = self.client.patch(reverse('post', kwargs={'post_id': post_pk}),
-                                             json.dumps(request_data),
+                                     json.dumps(request_data),
                                      content_type="application/json",
                                      **header)
         self.assertContains(response, 'ok', status_code=200)
@@ -326,7 +326,7 @@ class PostListViewTest(TestCase):
         response = self.client.get(reverse('posts_list'))
         self.assert_contains_name(response, [post_us1_ac, post_us2_ac, ])
         self.assert_not_contains_name(response, [post_us1_pd, post_us1_dl,
-                                                 post_us2_pd, post_us2_dl,])
+                                                 post_us2_pd, post_us2_dl, ])
 
     def test_author_list(self):
         (user1, user2,

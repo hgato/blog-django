@@ -31,7 +31,7 @@ class SearchList extends React.Component {
                 posts: response.data.posts,
                 total_posts: response.data.total_posts
             })
-          })
+          }).catch((error) => {alert(error.response.data.message)})
     }
 
     pageRange(size) {

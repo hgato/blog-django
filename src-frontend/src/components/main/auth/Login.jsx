@@ -24,7 +24,7 @@ class Login extends React.Component {
                 self.props.setUser(response.data.user, response.data.jwt)
                 self.setRedirect()
             }
-        })
+        }).catch((error) => {alert(error.response.data.message)})
     }
 
     changeEmail(event) {

@@ -30,7 +30,7 @@ class NewPost extends React.Component {
                 self.postId = response.data.post.id;
                 self.setRedirect()
             }
-        })
+        }).catch((error) => {alert(error.response.data.message)})
     }
 
     changeName(event) {

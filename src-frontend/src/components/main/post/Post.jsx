@@ -24,7 +24,7 @@ class Post extends React.Component {
             self.setState({
                 post: response.data.post,
             })
-          })
+          }).catch((error) => {alert(error.response.data.message)})
     }
 
     render () {

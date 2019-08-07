@@ -24,7 +24,7 @@ class Menu extends React.Component {
                 self.props.setUser(null, null);
                 self.setRedirect()
             }
-        })
+        }).catch((error) => {alert(error.response.data.message)})
     }
 
     setRedirect = () => {

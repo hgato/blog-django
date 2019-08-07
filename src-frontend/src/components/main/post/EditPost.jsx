@@ -25,7 +25,7 @@ class EditPost extends React.Component {
                 name: response.data.post.name,
                 text: response.data.post.text,
             })
-          })
+          }).catch((error) => {alert(error.response.data.message)})
     }
 
     submit(event) {
@@ -40,7 +40,7 @@ class EditPost extends React.Component {
             if (response.status === 200) {
                 self.setRedirect()
             }
-        })
+        }).catch((error) => {alert(error.response.data.message)})
     }
 
     changeName(event) {

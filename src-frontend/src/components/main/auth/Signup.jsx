@@ -28,7 +28,7 @@ class Signup extends React.Component {
             if (response.status === 201) {
                 self.setRedirect()
             }
-          })
+          }).catch((error) => {alert(error.response.data.message)})
     }
 
     changeEmail (event) {

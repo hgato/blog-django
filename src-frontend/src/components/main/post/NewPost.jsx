@@ -1,7 +1,7 @@
 import React from 'react';
 import './NewPost.css';
 import axios from 'axios';
-import { Redirect } from 'react-router-dom';
+import {Redirect} from 'react-router-dom';
 
 class NewPost extends React.Component {
     constructor(props) {
@@ -30,7 +30,9 @@ class NewPost extends React.Component {
                 self.postId = response.data.post.id;
                 self.setRedirect()
             }
-        }).catch((error) => {alert(error.response.data.message)})
+        }).catch((error) => {
+            alert(error.response.data.message)
+        })
     }
 
     changeName(event) {
@@ -64,7 +66,7 @@ class NewPost extends React.Component {
                     <br/><br/>
                     <label>
                         <textarea name="text" value={this.state.text}
-                                         onChange={this.changeText}/>
+                                  onChange={this.changeText}/>
                     </label>
                     <br/><br/>
                     <input type="submit" value="Submit"/>

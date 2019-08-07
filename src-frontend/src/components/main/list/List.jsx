@@ -22,14 +22,16 @@ class List extends React.Component {
 
     loadPosts() {
         const self = this
-        const author = self.props.author ? `&author=${self.props.author }` : '';
+        const author = self.props.author ? `&author=${self.props.author}` : '';
         axios.get(`/api/posts/list?limit=${self.limit}&offset=${self.offset}${author}`)
-          .then(function (response) {
-            self.setState({
-                posts: response.data.posts,
-                total_posts: response.data.total_posts
-            })
-          }).catch((error) => {alert(error.response.data.message)})
+            .then(function (response) {
+                self.setState({
+                    posts: response.data.posts,
+                    total_posts: response.data.total_posts
+                })
+            }).catch((error) => {
+            alert(error.response.data.message)
+        })
     }
 
     pageRange(size) {
@@ -42,7 +44,7 @@ class List extends React.Component {
         this.loadPosts();
     }
 
-    render () {
+    render() {
         let toRender = [];
         for (let post of this.state.posts) {
             toRender.push(<ListItem post={post} key={post.id}/>)
@@ -57,7 +59,7 @@ class List extends React.Component {
                     {pages}
                 </div>
             </div>
-          );
+        );
     }
 }
 

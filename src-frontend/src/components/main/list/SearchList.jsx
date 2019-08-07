@@ -26,12 +26,14 @@ class SearchList extends React.Component {
         event.preventDefault()
         const self = this
         axios.get(`/api/search?limit=${self.limit}&offset=${self.offset}&query=${self.state.query}`)
-          .then(function (response) {
-            self.setState({
-                posts: response.data.posts,
-                total_posts: response.data.total_posts
-            })
-          }).catch((error) => {alert(error.response.data.message)})
+            .then(function (response) {
+                self.setState({
+                    posts: response.data.posts,
+                    total_posts: response.data.total_posts
+                })
+            }).catch((error) => {
+            alert(error.response.data.message)
+        })
     }
 
     pageRange(size) {
@@ -48,7 +50,7 @@ class SearchList extends React.Component {
         this.setState({query: event.target.value});
     }
 
-    render () {
+    render() {
         console.log(this.state)
         let toRender = [];
         for (let post of this.state.posts) {
@@ -72,7 +74,7 @@ class SearchList extends React.Component {
                     {pages}
                 </div>
             </div>
-          );
+        );
     }
 }
 

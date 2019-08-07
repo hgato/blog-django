@@ -12,7 +12,7 @@ class Menu extends React.Component {
         this.logout = this.logout.bind(this)
     }
 
-    logout () {
+    logout() {
         const self = this
         const config = {
             headers: {
@@ -24,7 +24,9 @@ class Menu extends React.Component {
                 self.props.setUser(null, null);
                 self.setRedirect()
             }
-        }).catch((error) => {alert(error.response.data.message)})
+        }).catch((error) => {
+            alert(error.response.data.message)
+        })
     }
 
     setRedirect = () => {

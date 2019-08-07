@@ -1,7 +1,7 @@
 import React from 'react';
 import './Login.css';
 import axios from 'axios';
-import { Redirect } from 'react-router-dom';
+import {Redirect} from 'react-router-dom';
 
 class Login extends React.Component {
     constructor(props) {
@@ -24,7 +24,9 @@ class Login extends React.Component {
                 self.props.setUser(response.data.user, response.data.jwt)
                 self.setRedirect()
             }
-        }).catch((error) => {alert(error.response.data.message)})
+        }).catch((error) => {
+            alert(error.response.data.message)
+        })
     }
 
     changeEmail(event) {

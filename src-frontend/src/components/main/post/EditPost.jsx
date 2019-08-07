@@ -1,7 +1,7 @@
 import React from 'react';
 import './EditPost.css';
 import axios from 'axios';
-import { Redirect } from 'react-router-dom';
+import {Redirect} from 'react-router-dom';
 
 class EditPost extends React.Component {
     constructor(props) {
@@ -20,12 +20,14 @@ class EditPost extends React.Component {
     loadPost() {
         let self = this
         axios.get(`/api/posts/${this.props.match.params.id}`)
-          .then(function (response) {
-            self.setState({
-                name: response.data.post.name,
-                text: response.data.post.text,
-            })
-          }).catch((error) => {alert(error.response.data.message)})
+            .then(function (response) {
+                self.setState({
+                    name: response.data.post.name,
+                    text: response.data.post.text,
+                })
+            }).catch((error) => {
+            alert(error.response.data.message)
+        })
     }
 
     submit(event) {
@@ -40,7 +42,9 @@ class EditPost extends React.Component {
             if (response.status === 200) {
                 self.setRedirect()
             }
-        }).catch((error) => {alert(error.response.data.message)})
+        }).catch((error) => {
+            alert(error.response.data.message)
+        })
     }
 
     changeName(event) {
@@ -74,7 +78,7 @@ class EditPost extends React.Component {
                     <br/><br/>
                     <label>
                         <textarea name="text" value={this.state.text}
-                                         onChange={this.changeText}/>
+                                  onChange={this.changeText}/>
                     </label>
                     <br/><br/>
                     <input type="submit" value="Submit"/>

@@ -20,14 +20,16 @@ class Post extends React.Component {
     loadPost() {
         let self = this
         axios.get(`/api/posts/${this.props.match.params.id}`)
-          .then(function (response) {
-            self.setState({
-                post: response.data.post,
-            })
-          }).catch((error) => {alert(error.response.data.message)})
+            .then(function (response) {
+                self.setState({
+                    post: response.data.post,
+                })
+            }).catch((error) => {
+            alert(error.response.data.message)
+        })
     }
 
-    render () {
+    render() {
         if (!this.state.post) {
             return <div/>
         }
@@ -44,7 +46,7 @@ class Post extends React.Component {
                 <p className="Post-footer">{this.state.post.author.first_name + ' ' + this.state.post.author.last_name}</p>
                 <p>{editLink}</p>
             </div>
-          );
+        );
     }
 }
 

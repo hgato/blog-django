@@ -20,30 +20,31 @@ class Signup extends React.Component {
         }
     }
 
-    signup (event) {
+    signup(event) {
         const self = this
         event.preventDefault()
-        axios.put('api/user/', this.state).
-        then(function (response) {
+        axios.put('api/user/', this.state).then(function (response) {
             if (response.status === 201) {
                 self.setRedirect()
             }
-          }).catch((error) => {alert(error.response.data.message)})
+        }).catch((error) => {
+            alert(error.response.data.message)
+        })
     }
 
-    changeEmail (event) {
+    changeEmail(event) {
         this.setState({email: event.target.value});
     }
 
-    changePassword (event) {
+    changePassword(event) {
         this.setState({password: event.target.value});
     }
 
-    changeFirstName (event) {
+    changeFirstName(event) {
         this.setState({first_name: event.target.value});
     }
 
-    changeLastName (event) {
+    changeLastName(event) {
         this.setState({last_name: event.target.value});
     }
 
@@ -59,33 +60,36 @@ class Signup extends React.Component {
         }
     }
 
-    render () {
+    render() {
         return (
             <div className="Signup">
                 {this.renderRedirect()}
                 <h3>Sign up</h3>
 
-                  <form onSubmit={this.signup}>
-                      <label>
-                          Email: <input type="text" name="email" value={this.state.email} onChange={this.changeEmail} />
-                      </label>
-                      <br/><br/>
-                      <label>
-                          Password: <input type="text" name="password" value={this.state.password} onChange={this.changePassword} />
-                      </label>
-                      <br/><br/>
-                      <label>
-                          First name: <input type="text" name="first_name" value={this.state.first_name} onChange={this.changeFirstName} />
-                      </label>
-                      <br/><br/>
-                      <label>
-                          Last name: <input type="text" name="last_name" value={this.state.last_name} onChange={this.changeLastName} />
-                      </label>
-                      <br/><br/>
-                      <input type="submit" value="Submit" />
-                  </form>
+                <form onSubmit={this.signup}>
+                    <label>
+                        Email: <input type="text" name="email" value={this.state.email} onChange={this.changeEmail}/>
+                    </label>
+                    <br/><br/>
+                    <label>
+                        Password: <input type="text" name="password" value={this.state.password}
+                                         onChange={this.changePassword}/>
+                    </label>
+                    <br/><br/>
+                    <label>
+                        First name: <input type="text" name="first_name" value={this.state.first_name}
+                                           onChange={this.changeFirstName}/>
+                    </label>
+                    <br/><br/>
+                    <label>
+                        Last name: <input type="text" name="last_name" value={this.state.last_name}
+                                          onChange={this.changeLastName}/>
+                    </label>
+                    <br/><br/>
+                    <input type="submit" value="Submit"/>
+                </form>
             </div>
-          );
+        );
     }
 }
 

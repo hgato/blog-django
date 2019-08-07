@@ -3,7 +3,7 @@ import './ListItem.css';
 import {Link} from "react-router-dom";
 
 class ListItem extends React.Component {
-    render () {
+    render() {
         return (
             <div className="ListItem">
                 <Link className="ListItem-Link" to={"/posts/" + this.props.post.id}>
@@ -17,7 +17,7 @@ class ListItem extends React.Component {
                     </div>
                 </Link>
             </div>
-          );
+        );
     }
 
 }

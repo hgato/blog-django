@@ -3,7 +3,7 @@ import './App.css';
 import './components/header/Header'
 import Header from "./components/header/Header";
 import Main from "./components/main/Main";
-import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+import {BrowserRouter as Router, Route, Link} from "react-router-dom";
 
 class App extends React.Component {
     constructor(props) {
@@ -21,18 +21,18 @@ class App extends React.Component {
         this.setState({user: user});
     }
 
-    render () {
-          return (
-              <Router>
-                  <div className="App">
-                      <header className="App-header">
-                          <Header user={this.state.user} setUser={this.setUser}/>
-                      </header>
-                      <main className="App-main"><Main user={this.state.user} setUser={this.setUser}/></main>
-                  </div>
-              </Router>
+    render() {
+        return (
+            <Router>
+                <div className="App">
+                    <header className="App-header">
+                        <Header user={this.state.user} setUser={this.setUser}/>
+                    </header>
+                    <main className="App-main"><Main user={this.state.user} setUser={this.setUser}/></main>
+                </div>
+            </Router>
 
-          );
+        );
     }
 
 }

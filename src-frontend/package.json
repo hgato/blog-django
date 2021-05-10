@@ -10,7 +10,7 @@
     "react-router-dom": "^5.0.1",
     "react-scripts": "3.0.1",
     "lodash.template": "^4.5.0",
-    "lodash": "^4.17.13"
+    "lodash": "^4.17.21"
   },
   "scripts": {
     "start": "react-scripts start",
